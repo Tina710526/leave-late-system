@@ -1,0 +1,489 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>請假／晚到申請系統</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 30px 16px;
+      font-family: "Microsoft JhengHei", sans-serif;
+      background: #f1f5ff;
+      color: #334155;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #4f67a8;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 18px;
+      margin-bottom: 22px;
+      box-shadow: 0 5px 20px #64748b18;
+    }
+
+    label {
+      display: block;
+      margin: 15px 0 7px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d5ddef;
+      border-radius: 9px;
+      font: inherit;
+      background: white;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 13px;
+      border: none;
+      border-radius: 10px;
+      background: #7189c7;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #526cae;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    #message {
+      margin-top: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .record {
+      padding: 14px 0;
+      border-bottom: 1px solid #e5eaf4;
+      overflow-wrap: anywhere;
+    }
+
+    .record:last-child {
+      border-bottom: none;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 9px;
+      margin-bottom: 6px;
+      border-radius: 20px;
+      background: #e8edff;
+      color: #4f67a8;
+      font-size: 13px;
+    }
+
+    .muted {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+        .stats-table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+    }
+
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    .stats-table th,
+    .stats-table td {
+      padding: 12px 8px;
+      text-align: center;
+      border-bottom: 1px solid #e5eaf4;
+    }
+
+    .stats-table th {
+      background: #e8edff;
+      color: #4f67a8;
+    }
+
+    .stats-table td:first-child,
+    .stats-table th:first-child {
+      text-align: left;
+    }
+
+    .stats-table tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <h1>請假／晚到申請</h1>
+    <p class="subtitle">有事別擔心，記得填寫申請紀錄 ♡</p>
+
+    <section class="card">
+      <h2>填寫申請資料</h2>
+
+      <form id="recordForm">
+        <label for="name">姓名</label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          maxlength="100"
+          required
+          placeholder="請輸入姓名"
+        />
+
+        <label for="kind">申請類型</label>
+        <select id="kind" name="kind" required>
+          <option value="leave">請假</option>
+          <option value="late">晚到</option>
+        </select>
+
+        <label for="event_date">日期</label>
+        <input
+          id="event_date"
+          name="event_date"
+          type="date"
+          required
+        />
+
+        <label for="event_time">時間</label>
+        <input
+          id="event_time"
+          name="event_time"
+          type="time"
+        />
+
+        <label for="reason">原因</label>
+        <textarea
+          id="reason"
+          name="reason"
+          maxlength="2000"
+          required
+          placeholder="請簡單說明原因"
+        ></textarea>
+
+        <button id="submitBtn" type="submit">
+          送出申請
+        </button>
+
+        <p id="message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <!-- 個人累積統計 -->
+    <section class="card">
+      <h2>📊 個人累積統計</h2>
+      <p class="muted">統計每個人的請假與晚到總次數</p>
+
+      <div class="stats-table-wrapper">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>姓名</th>
+              <th>累積請假</th>
+              <th>累積晚到</th>
+            </tr>
+          </thead>
+          <tbody id="statsList">
+            <tr>
+              <td colspan="3">統計載入中……</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>最新申請紀錄</h2>
+      <p class="muted">顯示最近 20 筆紀錄</p>
+      <button id="refreshBtn" type="button">
+        重新載入紀錄
+      </button>
+      <div id="recordsList" aria-live="polite">
+        尚未載入紀錄。
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { createClient }
+      from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // 請替換成你自己的 Supabase 資訊
+    const SUPABASE_URL = "https://qqipcotbvjsgammcvvue.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_VULOMV6p-H92hB3exW5jYQ_tpiI9ULO";
+
+    const message = document.getElementById("message");
+    const form = document.getElementById("recordForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const recordsList = document.getElementById("recordsList");
+
+    let supabase = null;
+
+    try {
+      if (
+        !SUPABASE_URL.startsWith("https://") ||
+        SUPABASE_URL.includes("在這裡") ||
+        SUPABASE_KEY.includes("在這裡") ||
+        !SUPABASE_KEY
+      ) {
+        throw new Error("請先填入 Supabase Project URL 和金鑰。");
+      }
+
+      supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch (error) {
+      message.textContent = error.message;
+    }
+
+    // 使用文字節點顯示資料，避免把資料庫內容當成 HTML 執行
+    function addText(parent, tag, value, className = "") {
+      const element = document.createElement(tag);
+      element.textContent = value ?? "";
+      if (className) element.className = className;
+      parent.appendChild(element);
+      return element;
+    }
+
+    async function loadRecords() {
+      if (!supabase) return;
+
+      recordsList.replaceChildren();
+      addText(recordsList, "p", "載入中……");
+
+      const { data, error } = await supabase
+        .from("records")
+        .select("id, name, kind, event_date, event_time, reason, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) {
+        recordsList.replaceChildren();
+        addText(
+          recordsList,
+          "p",
+          "載入失敗：" + error.message
+        );
+        return;
+      }
+
+      recordsList.replaceChildren();
+
+      if (!data || data.length === 0) {
+        addText(recordsList, "p", "目前還沒有申請紀錄。");
+        return;
+      }
+
+      for (const record of data) {
+        const item = document.createElement("article");
+        item.className = "record";
+
+        const kindText = {
+          leave: "請假",
+          late: "晚到"
+        };
+
+        addText(
+          item,
+          "span",
+          kindText[record.kind] || record.kind,
+          "tag"
+        );
+
+        addText(item, "div", "姓名：" + record.name);
+        addText(
+          item,
+          "div",
+          "日期：" + record.event_date +
+          (record.event_time ? "　時間：" + record.event_time : "")
+        );
+        addText(item, "div", "原因：" + record.reason);
+
+        recordsList.appendChild(item);
+      }
+    }
+
+     // 計算每個人的累積請假與晚到次數
+    async function loadStats() {
+      if (!supabase) return;
+
+      const statsList = document.getElementById("statsList");
+      statsList.replaceChildren();
+
+      const loadingRow = document.createElement("tr");
+      const loadingCell = document.createElement("td");
+      loadingCell.colSpan = 3;
+      loadingCell.textContent = "統計載入中……";
+      loadingRow.appendChild(loadingCell);
+      statsList.appendChild(loadingRow);
+
+      const { data, error } = await supabase
+        .from("records")
+        .select("name, kind");
+
+      if (error) {
+        statsList.replaceChildren();
+
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 3;
+        cell.textContent = "統計載入失敗：" + error.message;
+
+        row.appendChild(cell);
+        statsList.appendChild(row);
+        return;
+      }
+
+      // 依姓名累加次數
+      const people = {};
+
+      for (const record of data || []) {
+        const name = record.name?.trim();
+
+        if (!name) continue;
+
+        if (!people[name]) {
+          people[name] = {
+            leave: 0,
+            late: 0
+          };
+        }
+
+        if (record.kind === "leave") {
+          people[name].leave++;
+        } else if (record.kind === "late") {
+          people[name].late++;
+        }
+      }
+
+      statsList.replaceChildren();
+
+      const names = Object.keys(people).sort((a, b) =>
+        a.localeCompare(b, "zh-TW")
+      );
+
+      if (names.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 3;
+        cell.textContent = "目前還沒有申請紀錄。";
+
+        row.appendChild(cell);
+        statsList.appendChild(row);
+        return;
+      }
+
+      for (const name of names) {
+        const row = document.createElement("tr");
+
+        const nameCell = document.createElement("td");
+        nameCell.textContent = name;
+
+        const leaveCell = document.createElement("td");
+        leaveCell.textContent = people[name].leave + " 次";
+
+        const lateCell = document.createElement("td");
+        lateCell.textContent = people[name].late + " 次";
+
+        row.append(nameCell, leaveCell, lateCell);
+        statsList.appendChild(row);
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!supabase) {
+        message.textContent =
+          "請先確認 Supabase Project URL 和金鑰設定。";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      message.textContent = "資料送出中……";
+
+      const formData = new FormData(form);
+
+      const record = {
+        name: String(formData.get("name")).trim(),
+        kind: formData.get("kind"),
+        event_date: formData.get("event_date"),
+        event_time: formData.get("event_time") || null,
+        reason: String(formData.get("reason")).trim()
+      };
+
+      if (!record.name || !record.reason) {
+        message.textContent = "請填寫姓名和申請原因。";
+        submitBtn.disabled = false;
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from("records")
+          .insert([record]);
+
+        if (error) throw error;
+
+        message.textContent = "申請送出成功！";
+        form.reset();
+        await loadRecords();
+        await loadStats();
+      } catch (error) {
+        message.textContent =
+          "送出失敗：" + error.message +
+          "\n請確認資料表欄位、資料庫權限及網路連線。";
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    document.getElementById("refreshBtn")
+      .addEventListener("click", async () => {
+        await loadRecords();
+        await loadStats();
+      });
+
+    if (supabase) {
+      loadRecords();
+      loadStats();
+    }
+  </script>
+</body>
+</html>

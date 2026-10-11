@@ -259,7 +259,7 @@
           required
         />
 
-        <label for="event_time">時間</label>
+        <label for="event_time" id="eventTimeLabel">請假時間</label>
         <input
           id="event_time"
           name="event_time"
@@ -359,6 +359,21 @@
 
     const message = document.getElementById("message");
     const form = document.getElementById("recordForm");
+    
+    const kindSelect = document.getElementById("kind");
+    const eventTimeLabel = document.getElementById("eventTimeLabel");
+
+    function updateEventTimeLabel() {
+      if (kindSelect.value === "late") {
+        eventTimeLabel.textContent = "預計抵達時間";
+      } else {
+        eventTimeLabel.textContent = "請假時間";
+      }
+    }
+
+    kindSelect.addEventListener("change", updateEventTimeLabel);
+    updateEventTimeLabel();
+
     const submitBtn = document.getElementById("submitBtn");
     const recordsList = document.getElementById("recordsList");
 

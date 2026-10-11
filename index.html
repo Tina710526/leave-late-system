@@ -406,62 +406,92 @@
     }
 
     async function loadRecords() {
-      if (!supabase) return;
+let allRecords = [];
 
-      recordsList.replaceChildren();
-      addText(recordsList, "p", "載入中……");
+async function loadRecords() {
+  if (!supabase) return;
 
-      const { data, error } = await supabase
-        .from("records")
-        .select("id, name, kind, event_date, event_time, reason, created_at")
-        .order("created_at", { ascending: false })
-        .limit(20);
+  recordsList.replaceChildren();
+  addText(recordsList, "p", "載入中……");
 
-      if (error) {
-        recordsList.replaceChildren();
-        addText(
-          recordsList,
-          "p",
-          "載入失敗：" + error.message
-        );
-        return;
-      }
+  const { data, error } = await supabase
+    .from("records")
+    .select("id, name, kind, event_date, event_time, reason, created_at")
+    .order("created_at", { ascending: false })
+    .limit(20);
 
-      recordsList.replaceChildren();
+  if (error) {
+    recordsList.replaceChildren();
+    addText(recordsList, "p", "載入失敗：" + error.message);
+    return;
+  }
 
-      if (!data || data.length === 0) {
-        addText(recordsList, "p", "目前還沒有申請紀錄。");
-        return;
-      }
+  allRecords = data || [];
+  renderRecords();
+}
 
-      for (const record of data) {
-        const item = document.createElement("article");
-        item.className = "record";
+function renderRecords() {
+  const searchName = document
+    .getElementById("searchName")
+    .value.trim()
+    .toLowerCase();
 
-        const kindText = {
-          leave: "請假",
-          late: "晚到"
-        };
+  const filterKind = document.getElementById("filterKind").value;
 
-        addText(
-          item,
-          "span",
-          kindText[record.kind] || record.kind,
-          "tag"
-        );
+  const filteredRecords = allRecords.filter(record => {
+    const nameMatches = (record.name || "")
+      .toLowerCase()
+      .includes(searchName);
 
-        addText(item, "div", "姓名：" + record.name);
-        addText(
-          item,
-          "div",
-          "日期：" + record.event_date +
-          (record.event_time ? "　時間：" + record.event_time : "")
-        );
-        addText(item, "div", "原因：" + record.reason);
+    const kindMatches =
+      filterKind === "all" || record.kind === filterKind;
 
-        recordsList.appendChild(item);
-      }
-    }
+    return nameMatches && kindMatches;
+  });
+
+  recordsList.replaceChildren();
+
+  if (filteredRecords.length === 0) {
+    addText(recordsList, "p", "找不到符合條件的紀錄。");
+    return;
+  }
+
+  for (const record of filteredRecords) {
+    const item = document.createElement("article");
+    item.className = "record";
+
+    const kindText = {
+      leave: "請假",
+      late: "晚到"
+    };
+
+    addText(
+      item,
+      "span",
+      kindText[record.kind] || record.kind,
+      "tag"
+    );
+
+    addText(item, "div", "姓名：" + record.name);
+
+    addText(
+      item,
+      "div",
+      "日期：" + record.event_date +
+      (record.event_time ? "　時間：" + record.event_time : "")
+    );
+
+    addText(item, "div", "原因：" + record.reason);
+
+    recordsList.appendChild(item);
+  }
+}
+
+document.getElementById("searchName")
+  .addEventListener("input", renderRecords);
+
+document.getElementById("filterKind")
+  .addEventListener("change", renderRecords);
 
      // 計算每個人的累積請假與晚到次數
     async function loadStats() {

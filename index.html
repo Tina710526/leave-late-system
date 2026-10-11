@@ -428,6 +428,33 @@
         statsList.appendChild(row);
         return;
       }
+      
+      // 計算首頁統計卡片
+      const allRecords = data || [];
+
+      const leaveTotal = allRecords.filter(
+        record => record.kind === "leave"
+      ).length;
+
+      const lateTotal = allRecords.filter(
+        record => record.kind === "late"
+      ).length;
+
+      const leaveTotalEl = document.getElementById("leaveTotal");
+      const lateTotalEl = document.getElementById("lateTotal");
+      const allTotalEl = document.getElementById("allTotal");
+
+      if (leaveTotalEl) {
+        leaveTotalEl.textContent = leaveTotal;
+      }
+
+      if (lateTotalEl) {
+        lateTotalEl.textContent = lateTotal;
+      }
+
+      if (allTotalEl) {
+        allTotalEl.textContent = allRecords.length;
+      }
 
       // 依姓名累加次數
       const people = {};

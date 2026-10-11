@@ -240,7 +240,7 @@
           id="name"
           name="name"
           type="text"
-          maxlength="100"
+          maxlength="50"
           required
           placeholder="請輸入姓名"
         />
@@ -270,7 +270,7 @@
         <textarea
           id="reason"
           name="reason"
-          maxlength="2000"
+          maxlength="300"
           required
           placeholder="請簡單說明原因"
         ></textarea>
@@ -407,7 +407,6 @@
 
 
 let allRecords = [];
-
 async function loadRecords() {
   if (!supabase) return;
 

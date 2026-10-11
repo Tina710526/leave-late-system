@@ -439,10 +439,9 @@ function renderRecords() {
   const filterKind = document.getElementById("filterKind").value;
 
   const filteredRecords = allRecords.filter(record => {
-    const nameMatches = (record.name || "")
-      .toLowerCase()
-      .includes(searchName);
-
+    const nameMatches = searchName === "" ||
+      (record.name || "").trim().toLowerCase() === searchName;
+      
     const kindMatches =
       filterKind === "all" || record.kind === filterKind;
 

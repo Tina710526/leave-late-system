@@ -189,6 +189,40 @@
     font-size: 23px;
   }
 }
+  
+.record-filters {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0;
+  flex-wrap: wrap;
+}
+
+.record-filters input,
+.record-filters select {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #ead6df;
+  border-radius: 12px;
+  background: #fffafc;
+  color: #5e4b53;
+  font: inherit;
+}
+
+.record-filters input {
+  flex: 2 1 180px;
+}
+
+.record-filters select {
+  flex: 1 1 120px;
+}
+
+.record-filters input:focus,
+.record-filters select:focus {
+  outline: 2px solid #e9b6ca;
+  border-color: #cf829e;
+}
+
   </style>
 </head>
 
@@ -291,6 +325,20 @@
 
     <section class="card">
       <h2>最新申請紀錄</h2>
+      <div class="record-filters">
+        <input
+          type="text"
+          id="searchName"
+          placeholder="🔍 搜尋社員姓名"
+          aria-label="搜尋社員姓名"
+         />
+
+        <select id="filterKind" aria-label="篩選紀錄類型">
+          <option value="all">全部類型</option>
+          <option value="leave">請假</option>
+          <option value="late">晚到</option>
+        </select>
+      </div>
       <p class="muted">顯示最近 20 筆紀錄</p>
       <button id="refreshBtn" type="button">
         重新載入紀錄

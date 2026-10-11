@@ -147,6 +147,48 @@
     .stats-table tr:last-child td {
       border-bottom: none;
     }
+  /* 首頁統計卡片 */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.overview-card {
+  background: #fff8fa;
+  border: 1px solid #f5dce5;
+  border-radius: 16px;
+  padding: 18px 10px;
+  text-align: center;
+  box-shadow: 0 4px 14px #d9a7b51a;
+}
+
+.overview-card p {
+  margin: 0 0 10px;
+  color: #8b6976;
+  font-size: 14px;
+}
+
+.overview-number {
+  color: #c56d8b;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+@media (max-width: 420px) {
+  .overview-grid {
+    gap: 7px;
+  }
+
+  .overview-card {
+    padding: 14px 5px;
+  }
+
+  .overview-number {
+    font-size: 23px;
+  }
+}
   </style>
 </head>
 
@@ -207,6 +249,23 @@
       </form>
     </section>
 
+    <!-- 首頁統計 -->
+<section class="overview-grid" aria-label="申請統計">
+  <article class="overview-card">
+    <p>📋 請假筆數</p>
+    <div class="overview-number" id="leaveTotal">0</div>
+  </article>
+
+  <article class="overview-card">
+    <p>⏰ 晚到筆數</p>
+    <div class="overview-number" id="lateTotal">0</div>
+  </article>
+
+  <article class="overview-card">
+    <p>💗 登記總數</p>
+    <div class="overview-number" id="allTotal">0</div>
+  </article>
+</section>
     <!-- 個人累積統計 -->
     <section class="card">
       <h2>📊 個人累積統計</h2>

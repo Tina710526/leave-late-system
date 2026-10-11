@@ -364,14 +364,16 @@
     const eventTimeLabel = document.getElementById("eventTimeLabel");
 
     function updateEventTimeLabel() {
-      if (kindSelect.value === "late") {
-        eventTimeLabel.textContent = "預計抵達時間";
-      } else {
-        eventTimeLabel.textContent = "請假時間";
-      }
-    }
+      const selectedKind = document.getElementById("kind").value;
+      const label = document.getElementById("eventTimeLabel");
 
-    kindSelect.addEventListener("change", updateEventTimeLabel);
+      if (!label) return;
+
+      label.textContent =
+        selectedKind === "late" ? "預計抵達時間" : "請假時間";
+    }
+      
+    document.getElementById("kind").addEventListener("change", updateEventTimeLabel);
     updateEventTimeLabel();
 
     const submitBtn = document.getElementById("submitBtn");
